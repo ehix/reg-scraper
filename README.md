@@ -1,7 +1,10 @@
 # reg-scraper
-Utility to automate the collection of data to help inform the purchase of a car given its registration
+Utility to automate the collection of data to help inform the purchase of a car given its registration.
 
-`clean_air_zone.py`
+<h3>clean_air_zone.py</h3>
+
+Uses [`selenium-python`](https://selenium-python.readthedocs.io/index.html) to automate the submission of forms to the [UK Gov website](https://www.gov.uk/clean-air-zones).
+
 Example output:
 ```json
 {
