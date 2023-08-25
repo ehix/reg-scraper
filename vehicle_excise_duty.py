@@ -12,7 +12,6 @@ def parse_args():
     return parser.parse_args()
 
 
-
 def striplower(string):
     return string.strip().lower()
 
@@ -34,6 +33,7 @@ def main(args):
             print(f"{page.status_code}: page {page.reason.lower()}")
         else:
             print("reg not found")
+
 
 if __name__ == "__main__":
     main(parse_args())

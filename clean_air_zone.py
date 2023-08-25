@@ -46,7 +46,7 @@ def remove_span(html):
 
 
 def remove_pay(string):
-    return string.replace("\n\npay","")
+    return string.replace("\n\npay", "")
 
 
 def main(args):
@@ -93,7 +93,8 @@ def main(args):
     as_dict = dict()
     for data in table_data:
         city = data[0]
-        values = {table_header[e+1]: remove_pay(data[e+1]) for e in range(len(data)-1)}
+        values = {
+            table_header[e+1]: remove_pay(data[e+1]) for e in range(len(data)-1)}
         as_dict.update({city: values})
 
     print(json.dumps(as_dict, indent=4))
