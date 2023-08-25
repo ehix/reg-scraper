@@ -1,12 +1,42 @@
 
+import argparse
 import json
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.common import exceptions
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 
 # https://selenium-python.readthedocs.io/index.html
+
+service = Service()
+options = webdriver.ChromeOptions()
+options.add_argument("headless")  # don't open a browser window
+driver = webdriver.Chrome(service=service, options=options)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Get clean air zone information from DVLA website",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("reg", help="car registration")
+    parser.add_argument("-n", "--nonuk", action="store_true",
+                        help="car not registered in the UK")
+    return parser.parse_args()
+
+
+def resolve_url(url):
+    try:
+        driver.get(url)
+    except exceptions.WebDriverException as e:
+        exit(f"url could not be resolved\n{e.msg}")
+
+
+def find_element_by_id(id):
+    try:
+        return driver.find_element(By.ID, id)
+    except exceptions.NoSuchElementException as e:
+        exit(f"unable to find element \"{id}\" on page\n{e.msg}")
 
 
 def remove_span(html):
@@ -15,30 +45,33 @@ def remove_span(html):
     return str(soup)
 
 
-def main():
-    service = Service()
-    options = webdriver.ChromeOptions()
-    driver = webdriver.Chrome(service=service, options=options)
+def main(args):
+    resolve_url(
+        "https://vehiclecheck.drive-clean-air-zone.service.gov.uk/vehicle_checkers/enter_details")
 
-    url = "https://vehiclecheck.drive-clean-air-zone.service.gov.uk/vehicle_checkers/enter_details"
-    driver.get(url)
+    try:
+        # On page 1, enter the registration...
+        vrn = find_element_by_id("vrn")
+        vrn.send_keys(args.reg)
+        # select if car registered in the UK...
+        vrc = find_element_by_id(
+            "registration-country-2" if args.nonuk else "registration-country-1")
+        vrc.click()
+        # and submit
+        sub = find_element_by_id("submit_enter_details_button")
+        sub.click()
+    except exceptions.NoSuchElementException as e:
+        exit(f"the page may have changed or registration incorrect\n{e.msg}")
 
-    # On page 1, enter the registration...
-    vrn = driver.find_element(By.ID, "vrn")
-    vrn.send_keys("S211APN")
-    # confirm registered in UK (Non-UK: registration-country-2)...
-    vrc = driver.find_element(By.ID, "registration-country-1")
-    vrc.click()
-    # and submit
-    sub = driver.find_element(By.ID, "submit_enter_details_button")
-    sub.click()
-
-    # On page 2, confirm details are correct...
-    confirm = driver.find_element(By.ID, "confirm_details-1")
-    confirm.click()
-    # and submit again
-    sub = driver.find_element(By.ID, "submit_confirm_details_button")
-    sub.click()
+    try:
+        # On page 2, confirm details are correct...
+        confirm = find_element_by_id("confirm_details-1")
+        confirm.click()
+        # and submit again
+        sub = find_element_by_id("submit_confirm_details_button")
+        sub.click()
+    except exceptions.NoSuchElementException as e:
+        exit(f"the page may have changed\n{e.msg}")
 
     # On page 3, collect results from table
     table_data = driver.find_element(By.ID, "compliance-table")
@@ -64,4 +97,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(parse_args())
