@@ -12,7 +12,7 @@ from selenium.webdriver.common.by import By
 
 service = Service()
 options = webdriver.ChromeOptions()
-options.add_argument("headless")  # don't open a browser window
+options.add_argument("headless")
 driver = webdriver.Chrome(service=service, options=options)
 
 
@@ -43,6 +43,10 @@ def remove_span(html):
     soup = BeautifulSoup(html, 'html.parser')
     soup.span.decompose()
     return str(soup)
+
+
+def remove_pay(string):
+    return string.replace("\n\npay","")
 
 
 def main(args):
@@ -78,7 +82,7 @@ def main(args):
     table_data = table_data.get_attribute("innerHTML")
 
     # Extract rows from table
-    table_data = [[cell.text.strip() for cell in row(["td", "th"])]
+    table_data = [[cell.text.strip().lower() for cell in row(["td", "th"])]
                   for row in BeautifulSoup(table_data, "html.parser")("tr")]
     # Reduce to first 3 entries in the list
     table_data = [i[:3] for i in table_data]
@@ -89,7 +93,7 @@ def main(args):
     as_dict = dict()
     for data in table_data:
         city = data[0]
-        values = {table_header[e+1]: data[e+1] for e in range(len(data)-1)}
+        values = {table_header[e+1]: remove_pay(data[e+1]) for e in range(len(data)-1)}
         as_dict.update({city: values})
 
     print(json.dumps(as_dict, indent=4))
