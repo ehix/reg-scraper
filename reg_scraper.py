@@ -39,14 +39,7 @@ class ConfigHandler():
 
 
 if __name__ == '__main__':
-    # print(caz.run)
-    # args = Config.consume(file)
-
     results = ResultsHandler(json=True)
-    # create and configure the thread pool
-    # print(everything)
-    # for i in everything:
-    #     print(i[1].values())
     config = ConfigHandler.from_config()
     with ThreadPool(2) as pool:
         _ = [pool.apply_async(func, args=args.values(
