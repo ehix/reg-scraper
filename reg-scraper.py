@@ -54,3 +54,5 @@ if __name__ == '__main__':
         pool.close()
         # wait for all issued tasks to complete
         pool.join()
+
+    print(results.get())
